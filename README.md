@@ -20,8 +20,15 @@ The `simulation` module adds the features needed to run the ecosystem:
 - Options for saving and restoring simulations
 
 ## Images
-The images below are examples of simulation results.
-
+The images below are examples of simulation results:
+1. [animation of organisms population](biomap.gif)
+2. [plots of all organisms population](0_organisms_number.png)
+3. [plots of herbivores population](0_herbivores_number.png)
+4. [plots of carnivores population](0_carnivores_number.png)
+5. [plots of plants stats](0_plants_stats.png)
+6. [plots of herbivores stats](0_herbivore_stats.png)
+7. [plots of carnivores stats](0_carnivore_stats.png)
+8. [map](map.png)
 ## To-Do List
 1. Give temperature a more significant role, possibly linked to metabolism (for example, ideal temperature increases energy gain).
 2. Add more influential stats: animal behavior (solitary vs. group), senses (to affect movement logic), etc.
