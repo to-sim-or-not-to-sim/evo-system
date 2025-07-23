@@ -26,3 +26,5 @@ The images below are examples of the results.
 1. Give temperature a more significant role, possibly linked to metabolism (for example, ideal temperature increases energy gain).
 2. Add more influential stats: animal behavior (solitary vs. group), senses (to affect movement logic), etc.
 3. Increase complexity in plant reproduction (for example, interactions with nearby plants).
+4. Adding life underwater and mixed.
+5. Adding omnivores.
