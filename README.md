@@ -1,5 +1,5 @@
 # EVO-SYSTEM
-Simulation of an evolving ecosystem using Perlin noise for procedural world generation in Python.
+A python simulation of an evolving ecosystem using Perlin noise for procedural world generation.
 
 ## World Generation
 The world is generated using Perlin noise, implemented through the custom `noise` library. This library includes functions to create various environmental maps (height, temperature, humidity, etc.). A Gaussian mask can be applied to create an island-like shape in the center of the world. It also provides tools to visualize these maps. An example usage is included in the `main()` function.
