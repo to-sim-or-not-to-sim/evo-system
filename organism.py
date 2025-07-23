@@ -2,20 +2,10 @@ import numpy as np
 import random
 from numba import njit
 
+#MODIFY ALSO THIS IF YOU MODIFY THE SIZE OF THE WORLD IN SIMULATION
 #------------------------------##
 l=105                          ##
 h=105                          ##
-steps_h=[7,15,21,35,21,15,7]   ##
-weights_h=[1,2,3,4,3,2,1]      ##
-steps_t=[35,21,15,7]           ##
-weights_t=[2,2,1,1]            ##
-steps_hum=[15,21,35]           ##
-weights_hum=[1,1,1]            ##
-steps_nut=[7,15,21]            ##
-weights_nut=[1,1,1]            ##
-steps_c=[7,15,15,21,21,35]     ##
-weights_c=[1,2,2,3,3,4]        ##
-step_evo_c=15                  ##
 #------------------------------##
 
 #-------PLANTS COSTANTS--------------
@@ -52,6 +42,7 @@ class Plant:
         self.energy=0
         
     def show_stats(self):
+        '''Prints the plant's stats in a readable format.'''
         print("---------------------------")
         print("POSITION: (", self.x, ",", self.y, ")")
         print("HEIGHT:", self.height, "/", self.base_height)
@@ -62,6 +53,7 @@ class Plant:
         print("---------------------------")
     
     def ageing(self):
+        '''Changes the age and all the stats of a plant simulating growth.'''
         self.age+=1
         self.height=self.age*self.base_height/self.lifespan
         self.roots=(self.age/self.lifespan)**(1/3)
@@ -70,6 +62,7 @@ class Plant:
         self.energy_needed=cost_plant_energy_needed*self.height*self.roots*self.leaves
         
     def get_energy(self,nutrients,water,light):
+        '''Simulates the energy gain for plants.'''
         if nutrients>0 and water>0 and light>0:
             hypothetical_gain=cost_plant_get_energy*((nutrients+water)*self.roots**2+self.height*self.leaves*light)
             if hypothetical_gain>3*self.energy_needed:
@@ -81,6 +74,7 @@ class Plant:
         return 0,0
         
     def try_reproduction(self,height_map):
+        '''Simulates plant reproduction and genetic inheritance to the offspring.'''
         if self.energy>2*self.energy_needed and self.age>cost_plant_maturity*self.lifespan:
             self.energy-=self.energy_needed
             r=random.random()
@@ -104,6 +98,7 @@ class Plant:
             return None    
                                 
 def mean_stats_plant(plants):
+    '''Returns the mean of the stats for a list of plants. If the list is empty it returns 0 for each stat.'''
     if len(plants)>0:
         heights=[]
         rootss=[]
@@ -152,6 +147,7 @@ class Animal:
         self.energy=self.energy_needed
         
     def show_stats(self):
+        '''Prints the animal's stats in a readable format.'''
         print("---------------------------")
         print("POSITION: (", self.x, ",", self.y, ")")
         print("HEIGHT:", self.height, "/", self.base_height)
@@ -166,6 +162,7 @@ class Animal:
         print("---------------------------")
     
     def ageing(self):
+        '''Changes the age and all the stats of an animal simulating growth.'''
         self.age+=1
         self.height=self.base_height/(1+np.exp(-4*self.age/self.lifespan))
         self.largeness=self.base_largeness/(1+np.exp(-4*self.age/self.lifespan))
@@ -173,6 +170,7 @@ class Animal:
         self.energy_needed=cost_energy_needed*self.largeness*(self.largeness*self.height+self.speed**2)
 
 def mean_stats_animal(animals):
+    '''Returns the mean of the stats for a list of animals, except gender. If the list is empty it returns 0 for each stat.'''
     if len(animals)>0:
         heights=[]
         largenesss=[]
@@ -197,15 +195,17 @@ cost_herb_reproduction_chance=0.35
 class Herbivore(Animal):
     
     def get_energy(self,plants):
+        '''Simulates the energy gain for herbivores.'''
         for plant in plants:
-            if plant.height<self.height+0.1:
+            if plant.height<self.height+0.1: #CHECK IF IT CAN REACH THE LEAVES
                 self.energy+=cost_herb_get_energy*plant.leaves
                 plant.leaves-=cost_herb_get_energy*plant.leaves
                 if self.energy>3*self.energy_needed:
                     break        
    
     def try_move_or_reproduction(self,herbivores,height_map,plant_count):
-        if self.energy<2*self.energy_needed:
+        '''Simulates the movement or the reproduction for herbivores and the passing of genes to the kid. Returns the new herbivore if successful.'''
+        if self.energy<2*self.energy_needed: #THE HERBIVORE STRUGGLED DURING THE LAST TURN SO SEARCH FOR A BETTER PLACE
             matrix_for_choice=help_movement(plant_count,self.y,self.x)
             y,x=TAC_matrix(matrix_for_choice) #CHOOSE WHERE TO GO
             new_y=self.y
@@ -227,15 +227,15 @@ class Herbivore(Animal):
             else:
                 self.x=new_x
                 self.y=new_y                    
-        elif self.energy>2*self.energy_needed and self.age>cost_maturity*self.lifespan:
+        elif self.energy>2*self.energy_needed and self.age>cost_maturity*self.lifespan: #THE HERBIVORE CAN BREED
             mate=None
             n=0
-            while mate==None and n<len(herbivores):
+            while mate==None and n<len(herbivores): #SEARCHING FOR A MATE
                 if herbivores[n].gender!=self.gender and herbivores[n].energy>2*self.energy_needed and herbivores[n].age>cost_maturity*herbivores[n].lifespan:
                     mate=herbivores[n]
                     herbivores[n].energy_needed-=0.5*herbivores[n].energy_needed
                 n+=1
-            if mate!=None:
+            if mate!=None: #SIMULATING GENES (BUT NOT ALLELES)
                 self.energy-=0.5*self.energy_needed
                 r=random.random()
                 couple=[self,mate]
@@ -274,19 +274,20 @@ cost_body=1.1 #>1
 class Carnivore(Animal):
     
     def get_energy(self,herbivores,bodies):
+        '''Simulates the energy gain for carnivores.'''
         new_herbivores=[]
         n=0
         for herbivore in herbivores:
             n+=1
-            if herbivore.largeness<self.largeness-0.1 or herbivore.speed<self.speed-0.1:
+            if herbivore.largeness<self.largeness-0.1 or herbivore.speed<self.speed-0.1: #CHECK IF IT WINS
                 self.energy+=cost_carb_get_energy*herbivore.energy_needed
                 if self.energy>3*self.energy_needed:
                     break        
             else:
-                new_herbivores.append(herbivore)
+                new_herbivores.append(herbivore) #UPDATES THE LIST OF HERBIVORES REMAINING
         for i in range(n,len(herbivores)):
             new_herbivores.append(herbivores[i])
-        if self.energy<cost_body*self.energy_needed:
+        if self.energy<cost_body*self.energy_needed: #IF HUNGRY IT START EATING DEAD BODIES BUT NOT TOO MUCH, DEPENDING ON cost_body
             for body in bodies:
                 if body.eff_energy<cost_body*self.energy_needed-self.energy:
                     self.energy+=body.eff_energy
@@ -299,6 +300,8 @@ class Carnivore(Animal):
         return new_herbivores
        
     def try_move_or_reproduction(self,carnivores,height_map,herbivore_count):
+        '''Simulates the movement or the reproduction for carnivores and the passing of genes to the kid. Returns the new carnivore if successful.'''
+        #SAME LOGIC OF HERBIVORES
         if self.energy<2*self.energy_needed:
             matrix_for_choice=help_movement(herbivore_count,self.y,self.x)
             y,x=TAC_matrix(matrix_for_choice) #CHOOSE WHERE TO GO
@@ -367,6 +370,7 @@ class Body:
         self.eff_energy=energy
 
     def decomposing(self,nutrients_map):
+        '''Simulates decomposition of a body (loss of energy stored).'''
         if self.eff_energy>(1/5)*self.energy:
             nutrients_map[self.y][self.x]+=(1/5)*self.energy
             self.eff_energy-=(1/5)*self.energy
@@ -378,15 +382,18 @@ class Body:
         else:
             return False
 
-#------USEFUL FUNCTIONS USED BEFORE
+#------USEFUL FUNCTIONS USED BEFORE OR IN simulation.py
             
 def count_organism(organisms,lenght=l,height=h):
+    '''Counts the number of organism (list) in each tile and returns the matrix containing the results.'''
     count=np.zeros((height,lenght))
     for organism in organisms:
         count[organism.y][organism.x]+=1
     return count
         
 def TAC_matrix(matrix):
+    '''Uses Try and Catch algorithm on a matrix. It returns a tile of the matrix. 
+    Works only with positive values.'''
     y=random.randint(0,len(matrix)-1)
     x=random.randint(0,len(matrix[0])-1)
     z=random.uniform(0,np.max(matrix))
@@ -398,6 +405,7 @@ def TAC_matrix(matrix):
 
 @njit
 def help_movement(count,y,x,sigma=2):
+    '''Applies a gaussian filter to the count matrix simulating perception of animal (the closer the better).'''
     matrix=np.zeros((len(count),len(count[0])))
     for i in range(0,len(count)):
         for j in range(0,len(count[0])):
@@ -408,6 +416,7 @@ help_movement(np.zeros((1,1)),0,0)
 
 @njit
 def matrix_for_plant_reproduction(height_map,y,x,sigma=3):
+    '''Returns a probability matrix to choose the position for a newborn plant.'''
     matrix=np.zeros((len(height_map),len(height_map[0])))
     for i in range(0,len(height_map)):
         for j in range(0,len(height_map[0])):
