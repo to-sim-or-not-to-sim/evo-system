@@ -40,4 +40,5 @@ The images below are examples of simulation results:
 
 ---
 
-**Note**: this is a personal, work-in-progress project built for exercise and interests in evolving ecosystems. There is no guarantee of continued development, but I wanted to share this project because I think it's a cool and inspiring one.   
+**Note 1**: This is a personal, work-in-progress project built for fun and out of interest in evolving ecosystems. There is no guarantee of continued development, but I wanted to share this project because I think it's a cool and inspiring experiment.   
+**Note 2**: If you have ideas or suggestions, feel free to reach out or open an issue!
