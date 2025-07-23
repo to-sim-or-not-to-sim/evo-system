@@ -6,8 +6,7 @@ from numba import njit
 import random
 import matplotlib.animation as animation
 
-#TRYING DIFFERENT SETTINGS TO OPTIMIZE THE SIMULATION AND HAVING A FUNCTIONING ECOSYSTEM
-#--SETTING COSTANTS FOR WORLD--##
+#--SETTING CONSTANTS FOR WORLD-##
 #------------------------------##
 l=105                          ##
 h=105                          ##
@@ -27,11 +26,14 @@ num_p=900000                   ##
 num_herb=50000                 ##
 num_carn=1500                  ##
 #------------------------------##
+#IF YOU CHANG l AND h YOU HAVE TO MODIFY THEM ALSO IN organism.py
+
 
 #--------WORKING ON MATRIX----------
 
 @njit
 def helper_plants_generator(height_matrix,sigma=(l+h)/(10)):
+    '''Helps with the generation of plants in the world creating a probability matrix using height map and a gaussian.'''
     helper_matrix=np.zeros((len(height_matrix),len(height_matrix[0])))
     for i in range(0,len(height_matrix)):
         for j in range(0,len(height_matrix[0])):
@@ -42,11 +44,13 @@ def helper_plants_generator(height_matrix,sigma=(l+h)/(10)):
 helper=helper_plants_generator(np.zeros((1,1)))
 
 def random_plants(N,height_map):
+    '''Generates N random plants.'''
     plants=[]
+    matrix=helper_plants_generator(height_map)
     print("GENERATING PLANTS...")
     print("")
     for k in range(0,N):
-        i,j=organism.TAC_matrix(helper_plants_generator(height_map))
+        i,j=organism.TAC_matrix(matrix)
         height=random.random()
         roots=random.random()
         leaves=random.random()
@@ -56,6 +60,7 @@ def random_plants(N,height_map):
     return plants
 
 def random_herbivores(N,plants_count):
+    '''Generates N random herbivores based on the plants.'''
     herbivores=[]
     print("GENERATING HERBIVORES...")
     print("")
@@ -71,6 +76,7 @@ def random_herbivores(N,plants_count):
     return herbivores
 
 def random_carnivores(N,herbs_count):
+    '''Generates N random carnivores based on the herbivores.'''
     carnivores=[]
     print("GENERATING CARNIVORES...")
     print("")
@@ -86,6 +92,7 @@ def random_carnivores(N,herbs_count):
     return carnivores
 
 def fill_grid(grid,plants,herbivores,carnivores,bodies):
+    '''Fills the biomap in the World class starting from lists of plants, herbivores, carnivores and bodies.'''
     for plant in plants:
         grid[plant.y][plant.x][0].append(plant)
     for herbivore in herbivores:
@@ -109,7 +116,7 @@ class World:
                  steps_humidity=steps_hum, weights_humidity=weights_hum,
                  steps_nutrients=steps_nut, weights_nutrients=weights_nut,
                  steps_clouds=steps_c, weights_clouds=weights_c):
-        
+        '''Initialize the world generating all the maps using noise.py.'''
         print("GENERATING WORLD...")
         
         self.height_map=noise.generate_height_map(lenght,height,steps_height,weights_height)
@@ -117,7 +124,7 @@ class World:
         self.humidity_map=noise.generate_hum_map(self.height_map,self.temperature_map,steps_humidity,weights_humidity)
         self.nutrients_map=noise.generate_nut_map(self.height_map,self.temperature_map,self.humidity_map,steps_nutrients,weights_nutrients)
         
-        #changes due to other effects for example rain, wind ecc ecc... For now not useful 
+        #changes due to other effects for example rain, wind ecc ecc... 
         self.eff_temperature_map=np.zeros((len(self.height_map),len(self.height_map[0])))
         self.eff_humidity_map=np.zeros((len(self.height_map),len(self.height_map[0])))
         self.eff_nutrients_map=np.zeros((len(self.height_map),len(self.height_map[0])))
@@ -134,11 +141,18 @@ class World:
                 self.bio_map[i][j]=[ [], [], [], [] ] #0=plants - 1=herbivores - 2=carnivores - 3=bodies
         
     def reset(self):
+        '''Resets all the "eff" map of the world.'''
         self.eff_temperature_map=self.temperature_map.copy()
         self.eff_humidity_map=self.humidity_map.copy()
         self.eff_nutrients_map=self.nutrients_map.copy()
     
     def show_maps(self,which=None):
+        '''Shows the maps of the world and saves theme. Modifing "which" you can choose which map you want to show and save:\n
+        1- which="height": height map\n
+        2- which="temperature": temperature map\n
+        3- which="humidity": humidity map\n
+        4- which="nutrients": nutrients map\n
+        5- which=anything else: all the maps.'''
         if which=="height":
             noise.print_height_map(self.height_map)
         elif which=="temperature":
@@ -154,27 +168,32 @@ class World:
             noise.print_nut_map(self.nutrients_map)
         
     def update_clime(self,step=step_evo_c):
+        '''Updates the eff temperature and humidity map simulating wind and rain modifing the cloud map adding a noise map over the precedent one.'''
         self.cloud_map+=noise.noise(len(self.height_map[0]),len(self.height_map),step)
         self.cloud_map/=2
         self.eff_temperature_map=0.5*self.temperature_map*(2-self.cloud_map)
         self.eff_humidity_map+=rain_cost*self.cloud_map
         
     def update_plants(self,plants):
+        '''Simulates the energy gained by a list of plants and the water and nutrients lost by the tiles of the world.'''
         for plant in plants:
             nutrients_taken,water_taken=plant.get_energy(self.eff_nutrients_map[plant.y][plant.x],self.eff_humidity_map[plant.y][plant.x],1-self.cloud_map[plant.y][plant.x])
             self.eff_nutrients_map[plant.y][plant.x]-=nutrients_taken
             self.eff_humidity_map[plant.y][plant.x]-=water_taken
         
     def update_herbivores(self,herbivores,plants):
+        '''Simulates the energy gained by a list of herbivores.'''
         for herbivore in herbivores:
             herbivore.get_energy(plants)
         
     def update_carnivores(self,carnivores,herbivores,bodies):
+        '''Simulates the energy gained by a list of carnivores. Returns the list of herbivores that survived.'''
         for carnivore in carnivores:
             herbivores=carnivore.get_energy(herbivores,bodies)
         return herbivores
 
     def ageing_plant(self,plants):
+        '''Simulates ageing for plants adding nutrients of dead plants to the soil.'''
         new_plants=[]
         for plant in plants:
             plant.ageing()
@@ -184,7 +203,8 @@ class World:
                 new_plants.append(plant)
         return new_plants    
 
-    def ageing_animal(self,animals,bodies):
+    def ageing_animal(self,animals,bodies): 
+        '''Simulates ageing for animals adding dead animals to the list of bodies.'''
         new_animals=[]
         for animal in animals:
             animal.ageing()
@@ -195,6 +215,7 @@ class World:
         return new_animals
                 
     def update_bodies(self,bodies):
+        '''Simulates the decomposition of bodies.'''
         new_bodies=[]
         for body in bodies:
             remain=body.decomposing(self.eff_nutrients_map)
@@ -203,18 +224,21 @@ class World:
         return new_bodies
 
     def refill_nutrients(self):
+        '''Simulates natural refilling of nutrients.'''
         for i in range(0,len(self.height_map)):
             for j in range(0,len(self.height_map[0])):
                 if self.eff_nutrients_map[i][j]<(4/5)*self.nutrients_map[i][j]:
                     self.eff_nutrients_map[i][j]+=(1/5)*self.nutrients_map[i][j]
     
     def refill_water(self):
+        '''Simulates natural refilling of water.'''
         for i in range(0,len(self.height_map)):
             for j in range(0,len(self.height_map[0])):
                 if self.eff_humidity_map[i][j]<(4/5)*self.humidity_map[i][j]:
                     self.eff_humidity_map[i][j]+=(1/5)*self.humidity_map[i][j]
     
     def organism_count(self):
+        '''Returns the matrixes with the number of plants, herbivores and carnivores in each tile.'''
         plant_count=np.zeros((len(self.height_map),len(self.height_map[0])))
         herbivore_count=np.zeros((len(self.height_map),len(self.height_map[0])))
         carnivore_count=np.zeros((len(self.height_map),len(self.height_map[0])))
@@ -226,6 +250,7 @@ class World:
         return plant_count,herbivore_count,carnivore_count
                 
     def update_world(self,plant_count,herbivore_count,carnivore_count):
+        '''Updates all the organisms in the world ageing them and simulating eneergy gain and death.'''
         new_bio_map=np.empty((len(self.height_map),len(self.height_map[0])),dtype=object)
         for i in range(0,len(self.height_map)):
             for j in range(0,len(self.height_map[0])):
@@ -269,6 +294,7 @@ class World:
         self.bio_map=new_bio_map
     
     def unpack_organisms(self):
+        '''Returns the list of plants, herbivores and carnivores.'''
         final_plants=[]
         final_herbivores=[]
         final_carnivores=[]
@@ -284,6 +310,7 @@ class World:
         return final_plants,final_herbivores,final_carnivores
     
     def show_bio_map(self,plants_counts,herbivores_counts,carnivores_counts):
+        '''Function that starting from the count matrixes of all the organisms generates an animation of the simulation.'''
         fig,ax=plt.subplots(nrows=1,ncols=3,figsize=(15,5))
         ax[0].set_title("PLANTS")
         ax[1].set_title("HERBIVORES")
@@ -304,6 +331,7 @@ class World:
         plt.show()
                 
     def initialize_simulation(self,number_of_plants=num_p,number_of_herbivore=num_herb,number_of_carnivore=num_carn):
+        '''Generates the organism all at once and returns the lists containing them in this order: plants, herbivores, carnivores. It also shows the world height map.'''
         print("PREPARING TO SHOW WORLD...")
         self.show_maps("height")
         self.update_clime()
@@ -319,7 +347,11 @@ class World:
         print("CARNIVORES GENERATED")
         return plants,herbivores,carnivores
 
-    def simulation(self,days=10,saving=True):
+    def simulation(self,days=100,saving=True):
+        '''This kind of simulation starts using "initialize-simulation" as start. 
+        Needs a larger number of organisms at the beginning due to adaptability problems.
+        At the end shows many plots of the stats and number of the organisms and an animation of the populations. It also saves these.
+        Using saving=True it's possible to save the world and organisms datas to start a new simulation from these datas using "simulation_from_data".'''
         plants,herbivores,carnivores=self.initialize_simulation()
         bodies=[]
         
@@ -509,6 +541,7 @@ class World:
             self.save_data()
 
     def save_data(self):
+        '''It saves the world and organisms datas in .txt files.'''
         np.savetxt("height_map.txt",self.height_map,fmt="%0.5f")
         np.savetxt("temperature_map.txt",self.temperature_map,fmt="%0.3f")
         np.savetxt("humidity_map.txt",self.humidity_map,fmt="%0.5f")
@@ -525,6 +558,7 @@ class World:
                 file_carnivores.write(f"{carnivore.x} {carnivore.y} {carnivore.base_height} {carnivore.base_largeness} {carnivore.speed} {carnivore.lifespan} {carnivore.gender} {carnivore.age} {carnivore.energy_needed} {carnivore.energy}\n")
 
     def get_data(self):
+        '''It gets data from .txt files generated by "save_data".'''
         print("OBTAINING DATA...")
         old_height_map=np.loadtxt("height_map.txt")
         old_temperature_map=np.loadtxt("temperature_map.txt")
@@ -569,6 +603,8 @@ class World:
         print("DONE")
         
     def simulation_from_data(self,days=200,saving=True): #restart with the organisms alive in the previous simulation but with age 0 
+        '''Starting from datas of a previous simulation it continues the simulation, but shows only the new datas. 
+        It's possible to save the datas obtain in the end using saving=True.'''
         self.show_maps("height")
         self.get_data()
         #LIST TO SAVE DATA--------------------##
@@ -752,6 +788,11 @@ class World:
             self.save_data()
     
     def simulation_with_steps(self,number_of_plants=20000,number_of_herbivore=5000,number_of_carnivore=2000,days_more=10):
+        '''This simulation introduces organisms in stages. Firstly it introduces the plants. 
+        When the population is 1.5 times the starting population it introduces the herbivores.
+        When the population of herbivores is 1.5 times the starting one it itnroduces carnivores.
+        Then simulates for more days defined by "days_more", fixed at 10. 
+        At the end saves the results without showing so that the simulation can start using "simulation_from_data".'''
         #create the organisms
         plants=random_plants(number_of_plants,self.height_map)
         print("OBSERVING PLANTS...")
@@ -818,6 +859,7 @@ class World:
         self.save_data()
 
 def main():        
+    '''Example of use.'''
     world=World()
     world.simulation_with_steps()
     world.simulation_from_data()
