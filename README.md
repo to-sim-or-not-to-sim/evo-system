@@ -7,8 +7,8 @@ The world is generated using Perlin noise, implemented through the custom `noise
 ## Organisms: Stats and Behavior
 Organisms are defined in the custom `organism` library, which includes all the constants related to their needs, reproduction chances, and energy gain.
 
-- **Plants** stats: height, roots, leaves and lifespan.
-- **Animals** stats: height, largeness, speed, lifespan and gender.
+- **Plant** stats: height, roots, leaves and lifespan.
+- **Animal** stats: height, largeness, speed, lifespan and gender.
 
 Each is implemented through dedicated classes with internal logic for aging, reproduction, and interaction. It also models bodies and decomposition.
 
@@ -29,10 +29,13 @@ The images below are examples of simulation results:
 6. [plots of herbivores stats](0_herbivores_stats.png)
 7. [plots of carnivores stats](0_carnivores_stats.png)
 8. [map](map.png)
+
 ## To-Do List
 1. Give temperature a more significant role, possibly linked to metabolism (for example, ideal temperature increases energy gain).
 2. Add more influential stats: animal behavior (solitary vs. group), senses (to affect movement logic), etc.
 3. Increase complexity in plant reproduction (for example, interactions with nearby plants).
 4. Add underwater and amphibious life.
-5. Add omnivores.
+5. Add omnivorous animals.
 6. Optimization and code cleanup.
+
+**NOTE**: this is a personal, work-in-progress project built for exercise and interests in evolving ecosystems. There is no guarantee of continued development, but I wanted to share this project because I think it's a cool and inspiring project.   
