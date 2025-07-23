@@ -28,3 +28,4 @@ The images below are examples of the results.
 3. Increase complexity in plant reproduction (for example, interactions with nearby plants).
 4. Adding life underwater and mixed.
 5. Adding omnivores.
+6. Optimization and code cleanup.
