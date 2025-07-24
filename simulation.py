@@ -605,8 +605,8 @@ class World:
     def simulation_from_data(self,days=200,saving=True): #restart with the organisms alive in the previous simulation but with age 0 
         '''Starting from datas of a previous simulation it continues the simulation, but shows only the new datas. 
         It's possible to save the datas obtain in the end using saving=True.'''
-        self.show_maps("height")
         self.get_data()
+        self.show_maps("height")
         #LIST TO SAVE DATA--------------------##
         #TO SAVE DAYS PASSED------------------##
         d=[]                                  ##
