@@ -187,7 +187,7 @@ def mean_stats_animal(animals):
         
 #-------HERBIVORES COSTANTS----------
 
-cost_herb_get_energy=0.5 #prima 1.5
+cost_herb_get_energy=0.5
 cost_herb_reproduction_chance=0.35
 
 #-------HERBIVORES CLASS-------------
@@ -423,5 +423,6 @@ def matrix_for_plant_reproduction(height_map,y,x,sigma=3):
             if height_map[i][j]>0.5:
                 matrix[i][j]=np.exp(-(((y-i)/sigma)**2+((x-j)/sigma)**2))
     return matrix
+
 
 matrix_for_plant_reproduction(np.zeros((1,1)),0,0)    
