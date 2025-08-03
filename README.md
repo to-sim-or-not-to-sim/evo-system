@@ -21,14 +21,17 @@ The `simulation` module adds the features needed to run the ecosystem:
 
 ## Images
 The images below are examples of simulation results:
-1. [animation of organisms population](biomap.gif)
-2. [plots of all organisms population](0_organisms_number.png)
-3. [plots of herbivores population](0_herbivores_number.png)
-4. [plots of carnivores population](0_carnivores_number.png)
-5. [plots of plants stats](0_plants_stats.png)
-6. [plots of herbivores stats](0_herbivores_stats.png)
-7. [plots of carnivores stats](0_carnivores_stats.png)
+1. [animation of organisms population](biomap.mp4)
+2. [plot of all organisms population](0_organisms_number.png)
+3. [plot of herbivores population](0_herbivores_number.png)
+4. [plot of carnivores population](0_carnivores_number.png)
+5. [plot of plants stats](0_plants_stats.png)
+6. [plot of herbivores stats](0_herbivores_stats.png)
+7. [plot of carnivores stats](0_carnivores_stats.png)
 8. [map](map.png)
+9. [land and water divided](land.png)
+10. [plot of number of herbivores and carnivores](0_herbivores-carnivores.png)
+11. [animation of plot of organisms population](organisms.gif)
 
 ## To-Do List
 1. Give temperature a more significant role, possibly linked to metabolism (for example, ideal temperature increases energy gain).
