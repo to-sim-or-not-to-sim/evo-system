@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from numba import njit
 import random
 import matplotlib.animation as animation
+from mpl_toolkits.mplot3d import Axes3D
 
 #--SETTING CONSTANTS FOR WORLD-##
 #------------------------------##
@@ -329,11 +330,23 @@ class World:
         ani=animation.FuncAnimation(fig,update,frames=range(0,len(plants_counts)),interval=50,blit=True)
         ani.save("biomap.gif", writer="pillow",fps=10,dpi=200)
         plt.show()
-                
+    
+    def show_shape(self):
+        '''Shows the shape of land in the world. Saves also an image.'''
+        land_matrix=np.zeros((len(self.height_map),len(self.height_map[0])))
+        for i in range(0,len(self.height_map)):
+            for j in range(0,len(self.height_map[0])):
+                if self.height_map[i][j]>0.5:
+                    land_matrix[i][j]=1
+        plt.imshow(land_matrix,cmap="binary")
+        plt.savefig("land.png")
+        plt.show()
+    
     def initialize_simulation(self,number_of_plants=num_p,number_of_herbivore=num_herb,number_of_carnivore=num_carn):
         '''Generates the organism all at once and returns the lists containing them in this order: plants, herbivores, carnivores. It also shows the world height map.'''
         print("PREPARING TO SHOW WORLD...")
         self.show_maps("height")
+        self.show_shape()
         self.update_clime()
         #create the organisms
         print("GENERATING ORGANISMS...")
@@ -533,6 +546,27 @@ class World:
             ax[1][1].legend()                                                             ##
             plt.savefig("0_carnivores_stats.png",dpi=500)                                 ##
             plt.show()                                                                    ##
+            #CHECK IF LOTKA-VOLTERRA FRIENDLY---------------------------------------------##
+            plt.plot(herbivores_number,carnivores_number,color="black")                   ##
+            plt.xlabel("# herbivores")                                                    ##
+            plt.ylabel("# carnivores")                                                    ##
+            plt.savefig("0_herbivores-carnivores.png",dpi=500)                            ##
+            plt.show()                                                                    ##
+            fig=plt.figure()                                                              ##
+            ax=fig.add_subplot(111, projection="3d")                                      ##
+            ax.plot(herbivores_number,carnivores_number,plants_number,color="black")      ##
+            ax.set_xlabel("# herbivores")                                                 ##
+            ax.set_ylabel("# carnivores")                                                 ##
+            ax.set_zlabel("# plants")                                                     ##
+            dot=ax.scatter(herbivores_number[0],carnivores_number[0],plants_number[0])    ##
+            def updatedot(frame):
+                dot._offsets3d=([herbivores_number[frame]],
+                                [carnivores_number[frame]],
+                                [plants_number[frame]])
+                return dot,
+            ani=animation.FuncAnimation(fig,updatedot,frames=len(herbivores_number))      ##
+            ani.save("organisms.gif", writer="pillow",fps=10,dpi=200)                     ##
+            plt.show()                                                                    ##
             #-----------------------------------------------------------------------------##
             print("DONE")
         else:
@@ -607,6 +641,7 @@ class World:
         It's possible to save the datas obtain in the end using saving=True.'''
         self.get_data()
         self.show_maps("height")
+        self.show_shape()
         #LIST TO SAVE DATA--------------------##
         #TO SAVE DAYS PASSED------------------##
         d=[]                                  ##
@@ -780,6 +815,27 @@ class World:
             ax[1][1].legend()                                                             ##
             plt.savefig("0_carnivores_stats.png",dpi=500)                                 ##
             plt.show()                                                                    ##
+            #CHECK IF LOTKA-VOLTERRA FRIENDLY---------------------------------------------##
+            plt.plot(herbivores_number,carnivores_number,color="black")                   ##
+            plt.xlabel("# herbivores")                                                    ##
+            plt.ylabel("# carnivores")                                                    ##
+            plt.savefig("0_herbivores-carnivores.png",dpi=500)                            ##
+            plt.show()                                                                    ##
+            fig=plt.figure()                                                              ##
+            ax=fig.add_subplot(111, projection="3d")                                      ##
+            ax.plot(herbivores_number,carnivores_number,plants_number,color="black")      ##
+            ax.set_xlabel("# herbivores")                                                 ##
+            ax.set_ylabel("# carnivores")                                                 ##
+            ax.set_zlabel("# plants")                                                     ##
+            dot=ax.scatter(herbivores_number[0],carnivores_number[0],plants_number[0])    ##
+            def updatedot(frame):
+                dot._offsets3d=([herbivores_number[frame]],
+                                [carnivores_number[frame]],
+                                [plants_number[frame]])
+                return dot,
+            ani=animation.FuncAnimation(fig,updatedot,frames=len(herbivores_number))      ##
+            ani.save("organisms.gif", writer="pillow",fps=10,dpi=200)                     ##
+            plt.show()                                                                    ##
             #-----------------------------------------------------------------------------##
             print("DONE")
         else:
@@ -787,13 +843,15 @@ class World:
         if saving==True:
             self.save_data()
     
-    def simulation_with_steps(self,number_of_plants=20000,number_of_herbivore=5000,number_of_carnivore=2000,days_more=10):
+    def simulation_with_steps(self,number_of_plants=20000,number_of_herbivore=7000,number_of_carnivore=2000,days_more=10):
         '''This simulation introduces organisms in stages. Firstly it introduces the plants. 
         When the population is 1.5 times the starting population it introduces the herbivores.
         When the population of herbivores is 1.5 times the starting one it itnroduces carnivores.
         Then simulates for more days defined by "days_more", fixed at 10. 
         At the end saves the results without showing so that the simulation can start using "simulation_from_data".'''
         #create the organisms
+        self.show_maps("height")
+        self.show_shape()
         plants=random_plants(number_of_plants,self.height_map)
         print("OBSERVING PLANTS...")
         dd=0
@@ -862,7 +920,7 @@ def main():
     '''Example of use.'''
     world=World()
     world.simulation_with_steps()
-    world.simulation_from_data()
+    world.simulation_from_data(days=1000)
     
 if __name__=="__main__":
     main()

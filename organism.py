@@ -265,7 +265,7 @@ class Herbivore(Animal):
 
 #-------CARNIVORES COSTANTS----------
 
-cost_carb_get_energy=5
+cost_carb_get_energy=3
 cost_carb_reproduction_chance=0.35
 cost_body=1.1 #>1
 
@@ -279,7 +279,7 @@ class Carnivore(Animal):
         n=0
         for herbivore in herbivores:
             n+=1
-            if herbivore.largeness<self.largeness-0.1 or herbivore.speed<self.speed-0.1: #CHECK IF IT WINS
+            if herbivore.largeness<self.largeness-0.1 or herbivore.speed<self.speed-0.1 or herbivore.height<self.height-0.1: #CHECK IF IT WINS
                 self.energy+=cost_carb_get_energy*herbivore.energy_needed
                 if self.energy>3*self.energy_needed:
                     break        

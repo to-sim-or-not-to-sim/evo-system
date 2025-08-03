@@ -73,7 +73,7 @@ def noise(length,height,step):
 #--------------NOISE MAP WITH LAYERS-
 
 @njit        
-def layermap(length,height,steps,weights,mask=True,weight_gaussian=2):
+def layermap(length,height,steps,weights,mask=True,weight_gaussian=10):
     '''Generates a noise map summing various noise maps with certain weights and steps.
     Weights and steps must have the same lenght. 
     There is also the possibility to apply a gaussian mask with a customizable gaussian weight ("weight_gaussian").'''
