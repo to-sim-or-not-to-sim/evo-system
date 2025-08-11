@@ -21,7 +21,7 @@ The `simulation` module adds the features needed to run the ecosystem:
 
 ## Images
 The images below are examples of simulation results:
-1. [animation of organisms population](biomap.mp4)
+1. [a part of the animation of organisms population](biomap.mp4)
 2. [plot of all organisms population](0_organisms_number.png)
 3. [plot of herbivores population](0_herbivores_number.png)
 4. [plot of carnivores population](0_carnivores_number.png)
