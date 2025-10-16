@@ -269,7 +269,7 @@ cost_carb_get_energy=3
 cost_carb_reproduction_chance=0.35
 cost_body=1.1 #>1
 
-#-------HERBIVORES CLASS-------------
+#-------CARNIVORES CLASS-------------
 
 class Carnivore(Animal):
     
@@ -426,3 +426,4 @@ def matrix_for_plant_reproduction(height_map,y,x,sigma=3):
 
 
 matrix_for_plant_reproduction(np.zeros((1,1)),0,0)    
+
